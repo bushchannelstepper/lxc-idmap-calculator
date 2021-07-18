@@ -1,40 +1,43 @@
 #!/usr/bin/env ruby
 
-puts 'UID?'
-uid = gets.chomp.to_i
+require './LxcIdMap'
 
-puts 'GID?'
-gid = gets.chomp.to_i
-
-if !(uid > 0 && gid > 0) 
-  puts 'Need non-zero values'
-  exit
-end
-
-puts 'Base offset? (100000)'
+puts 'Base offset (100000)'
 offset = gets.chomp
 
-if offset.empty?
-  offset = 100000
-else
-  offset = offset.to_i
+puts 'List of UIDs to transpose'
+puts 'e.g 1969 420-426 2084-2525'
+uid_input = gets.chomp
+uidmap = LxcIdMap.new('u', uid_input)
+
+puts 'List of GIDs to transpose'
+gid_input = gets.chomp
+gidmap = LxcIdMap.new('g', gid_input)
+
+puts
+puts '# === /etc/pve/lxc/0000.conf ======'
+puts
+
+uidmap.render_lxc
+puts '# ---------------------------------'
+gidmap.render_lxc
+puts '# ---------------------------------'
+puts
+
+if uid_input then
+  puts '# Ensure these lines are present in'
+  puts '# === /etc/subuid ================='
+  uidmap.render_subid
+
+  puts '# ---------------------------------'
+  puts
 end
 
-puts "Using offset #{offset}"
+if gid_input then
+  puts '# Ensure these lines are present in'
+  puts '# === /etc/subgid ================='
+  gidmap.render_subid
 
-puts "UID #{uid} / GID #{gid}"
-puts
-
-puts "echo root:#{uid}:1 >> /etc/subuid"
-puts "echo root:#{gid}:1 >> /etc/subgid"
-puts
-puts "idmap for (e.g) 123.conf"
-puts
-puts "lxc.idmap = u 0 #{offset} #{uid}"
-puts "lxc.idmap = g 0 #{offset} #{gid}"
-puts
-puts "lxc.idmap = u #{uid} #{uid} 1"
-puts "lxc.idmap = g #{gid} #{gid} 1"
-puts
-puts "lxc.idmap = u #{uid + 1} #{uid + offset + 1} #{65535 - uid}"
-puts "lxc.idmap = g #{gid + 1} #{gid + offset + 1} #{65535 - gid}"
+  puts '# ---------------------------------'
+  puts
+end
