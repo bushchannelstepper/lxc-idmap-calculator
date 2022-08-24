@@ -1,6 +1,6 @@
 # lxc-idmap-calculator
 
-A script and classes for generating UID and GID mappings for unprivileged LXC containers because it's kind of a pain in the arse to do by hand.
+A script and classes for generating UID and GID mappings for unprivileged LXC containers because it's a pain in the arse to do by hand.
 
 Now manages multiple UIDs and GIDs as well as ranges to transpose.
 
